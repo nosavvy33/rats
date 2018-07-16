@@ -1,0 +1,16 @@
+Descomprimir raton_app.zip
+
+En el archivo common/Conexion.php, modificar las credenciales de conexión
+luego de la palabra "root" hay un entrecomillado vacío, allí colocar la
+contraseña de la base de datos
+
+Si la base de datos se encuentra en el mismo servidor, no modificar el valor
+host=localhost
+
+Modificar el dbname=ratoneras, con el nombre de el esquema o nombre de la
+ base de datos
+
+IMPORTANTE: colocar el api rest dentro de /var/www/html/ de tal manera
+que el android pueda comunicarse con este api rest apuntando hacia la
+dirección 
+

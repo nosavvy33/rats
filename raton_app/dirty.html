@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>CoRo Systems</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.7.0/dist/Chart.min.js"></script>   
+    	<script
+			  src="https://code.jquery.com/jquery-3.3.1.min.js"
+			  integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+			  crossorigin="anonymous"></script>
+<script src="./datalabels.js"></script>
+              <link rel="stylesheet" type="text/css" href="./style.css">
+              <meta charset="utf-8">
+</head>
+<body>
+
+<div class="centered">
+<canvas  id="grafico_avance" width="300" height="500"></canvas>
+     </div>
+        <script type="text/javascript">
+        	var avance;
+        	var total = 1000;
+        	$.ajax({
+        		url:"http://localhost/raton_app/api/web/avance_supervision.php",
+        		dataType : "JSON"
+        	})
+        	.done(function(data){
+        		avance = (data["avance"] / total) * 100 ;
+                var pendiente = ((total - data["avance"]) / total ) * 100;
+                avance = +avance.toFixed(2);
+                pendiente = +pendiente.toFixed(2);
+            var gph_avance = document.getElementById("grafico_avance").getContext("2d");
+            var grafico = new Chart(gph_avance, {
+                type : 'pie',
+                data : {
+                    labels : ["Supervisado", "No supervisado"],
+                    datasets : [{
+                        data : [avance, pendiente],
+                        backgroundColor : [
+                            'rgba(47,181,243, 0.2)',
+                            'rgba(106,37,158, 0.2)'
+                        ],
+                        borderColor : [
+                        'rgba(47,181,243, 0.2)',
+                            'rgba(106,37,158, 0.2)'                    
+                        ],
+                        borderWidth : 1
+                    }]
+                },
+                options: {
+                plugins: {
+                    datalabels: {
+                        backgroundColor: function(context) {
+                            return context.dataset.backgroundColor;
+                        },
+                        borderColor: 'black',
+                        borderRadius: 25,
+                        borderWidth: 2,
+                        color: 'black',
+                        display: function(context) {
+                            var dataset = context.dataset;
+                            var count = dataset.data.length;
+                            var value = dataset.data[context.dataIndex];
+                            return value > count * 1.5;
+                        },
+                        font: {
+                            weight: 'bold'
+                        }
+                    }
+                },
+
+                    responsive : false,
+                    title: {
+                        display: true,
+                        position: "top",
+                        text: "Avance de supervisión (%)",
+                        fontSize: 16,
+                        fontColor: "#111"
+                     }
+                }
+            });
+        });
+        
+    </script>
+    <br>
+<div>
+<canvas  id="grafico_captura" width="300" height="500"></canvas>
+     </div>
+        <script type="text/javascript">
+            var si;
+            var total;
+            $.ajax({
+                url:"http://localhost/raton_app/api/web/avance_captura.php",
+                dataType : "JSON"
+            })
+            .done(function(data){
+                total = data[2]["TOTAL"];
+                si = (data[0]["SI"] / total) * 100 ;
+                var no = (data[1]["NO"]/total)*100;
+                si = +si.toFixed(2);
+                no = +no.toFixed(2);
+                console.log("SI "+si);
+                console.log("NO "+no);
+            var gph_captura = document.getElementById("grafico_captura").getContext("2d");
+            var grafico = new Chart(gph_captura, {
+                type : 'pie',
+                data : {
+                    labels : ["Captura", "No captura"],
+                    datasets : [{
+                        data : [si, no],
+                        backgroundColor : [
+                            'rgba(47,181,243, 0.2)',
+                            'rgba(106,37,158, 0.2)'
+                        ],
+                        borderColor : [
+                        'rgba(47,181,243, 0.2)',
+                        'rgba(106,37,158, 0.2)'                  
+                        ],
+                        borderWidth : 1
+                    }]
+                },
+                options: {
+
+                    plugins: {
+                    datalabels: {
+                        backgroundColor: function(context) {
+                            return context.dataset.backgroundColor;
+                        },
+                        borderColor: 'black',
+                        borderRadius: 25,
+                        borderWidth: 2,
+                        color: 'black',
+                        display: function(context) {
+                            var dataset = context.dataset;
+                            var count = dataset.data.length;
+                            var value = dataset.data[context.dataIndex];
+                            return value > count * 1.5;
+                        },
+                        font: {
+                            weight: 'bold'
+                        }//,
+                        //formatter: Math.round
+                    }
+                },
+
+/*animation: {
+        duration: 0,
+        onComplete: function() {
+            var ctx = this.chart.ctx;
+            ctx.font = Chart.helpers.fontString(Chart.defaults.global.defaultFontFamily, 'normal', Chart.defaults.global.defaultFontFamily);
+            ctx.fillStyle = "black";
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+
+            this.data.datasets.forEach(function(dataset) {
+                for (var i = 0; i < dataset.data.length; i++) {
+                    for (var key in dataset._meta) {
+                        var model = dataset._meta[key].data[i]._model;
+                        ctx.fillText(dataset.data[i], model.x, model.y - 5);
+                    }
+                }
+            });
+        }
+    },
+*/
+                    responsive : false,
+                    title: {
+                        display: true,
+                        position: "top",
+                        text: "Capturas (%)",
+                        fontSize: 16,
+                        fontColor: "#111"
+                     }
+                }
+            });
+            
+        });
+        
+    </script>
+
+{"TOT_SIN_ACCESO":"32","TOT_RETIRADO_CLIENTE":"35","TOT_OPERATIVO":"35","TOT_PERDIDO":"27","TOT_DANADO":"48","TOT_SUSTITUIDO":"30"}
+
+<div>
+<canvas  id="grafico_estado" width="300" height="500"></canvas>
+     </div>
+        <script type="text/javascript">
+            $.ajax({
+                url:"http://localhost/raton_app/api/web/avance_estado.php",
+                dataType : "JSON"
+            })
+            .done(function(data){
+                let sin_acceso = data["TOT_SIN_ACCESO"];
+                let retirado = data["TOT_RETIRADO_CLIENTE"];
+                let operativo = data["TOT_OPERATIVO"];
+                let perdido = data["TOT_PERDIDO"];
+                let danado = data["TOT_DANADO"];
+                let sustituido = data["TOT_SUSTITUIDO"];
+
+                /*total = data[2]["TOTAL"];
+                si = (data[0]["SI"] / total) * 100 ;
+                var no = (data[1]["NO"]/total)*100;
+                si = +si.toFixed(2);
+                no = +no.toFixed(2);*/
+             
+            var gph_estado = document.getElementById("grafico_estado").getContext("2d");
+            var grafico = new Chart(gph_estado, {
+                type : 'bar',
+                data : {
+                    labels : ["Operativo", "Retirado","Perdido","Dañado","Sustituido","Sin acceso"],
+                    datasets : [{
+                        data : [operativo, retirado, perdido, danado, sustituido, sin_acceso],  
+                        backgroundColor : [
+                            'rgba(77,238,234, 0.2)',
+                            'rgba(116,238,21, 0.2)',
+                            'rgba(255,231,0, 0.2)',
+                            'rgba(240,0,255, 0.2)',
+                            'rgba(0,30,255, 0.2)',
+                            'rgba(106,37,158, 0.2)'
+
+                        ],
+                        borderColor : [
+                            'rgba(77,238,234, 0.2)',
+                            'rgba(116,238,21, 0.2)',
+                            'rgba(255,231,0, 0.2)',
+                            'rgba(240,0,255, 0.2)',
+                            'rgba(0,30,255, 0.2)',
+                            'rgba(106,37,158, 0.2)'
+
+                        ],
+                        borderWidth : 1
+                    }]
+                },
+                options: {
+                    legend: {
+                        display: false
+                        },
+                    tooltips: {
+                        enabled: false
+                        },
+                    plugins: {
+                    datalabels: {
+                        color: 'black',
+                        display: function(context) {
+                            return context.dataset.data[context.dataIndex] > 15;
+                        },
+                        font: {
+                            weight: 'bold'
+                        },
+                        formatter: Math.round
+                    }
+                },
+                scales: {
+                    xAxes: [{
+                        stacked: true
+                    }],
+                    yAxes: [{
+                        stacked: true
+                    }]
+                },
+
+/*animation: {
+        duration: 0,
+        onComplete: function() {
+            var ctx = this.chart.ctx;
+            ctx.font = Chart.helpers.fontString(Chart.defaults.global.defaultFontFamily, 'normal', Chart.defaults.global.defaultFontFamily);
+            ctx.fillStyle = "black";
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+
+            this.data.datasets.forEach(function(dataset) {
+                for (var i = 0; i < dataset.data.length; i++) {
+                    for (var key in dataset._meta) {
+                        var model = dataset._meta[key].data[i]._model;
+                        ctx.fillText(dataset.data[i], model.x, model.y - 5);
+                    }
+                }
+            });
+        }
+    },
+*/
+                    responsive : false,
+                    title: {
+                        display: true,
+                        position: "top",
+                        text: "Estado de dispositivos",
+                        fontSize: 16,
+                        fontColor: "#111"
+                     }
+                }
+            });
+            
+        });
+        
+    </script>
+</body>
+</html>

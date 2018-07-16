@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">	
+<title>Control de Roedores</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.7.0/dist/Chart.min.js"></script>   
+    <script
+			  src="https://code.jquery.com/jquery-3.3.1.min.js"
+			  integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+			  crossorigin="anonymous"></script>
+    <script src="./datalabels.js"></script>
+
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.bundle.min.js"></script>
+    <script defer src="https://use.fontawesome.com/releases/v5.0.9/js/all.js" integrity="sha384-8iPTk2s/jMVj81dnzb/iFR2sdA7u06vHJyyLlAd4snFpCl/SnyUjRrbdJsw1pGIl" crossorigin="anonymous"></script>
+    <style type="text/css">
+    .centered {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  /* bring your own prefixes */
+  transform: translate(-50%, -50%);
+/*  background-color: #d3d3d3;*/
+  max-width: 90vw;
+  max-height: 60vh;
+}
+ .card {
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+    transition: 0.3s;
+    border-radius: 8px; /* 5px rounded corners */
+/*    padding-left: 4vw;
+    padding-right: 4vw;*/
+}
+
+    .centered-vertical{
+        text-align: left;
+      position: fixed;
+  top: 10%;
+  left: 50%;
+  /* bring your own prefixes */
+  transform: translate(-50%, -20%);
+}
+        .down{
+            position: fixed;
+  bottom : 0 ;
+  /* bring your own prefixes */
+  /*transform: translate(0%, 0%);*/
+  width: 100vw;
+  height: 12vh;
+  background-color: #006699;
+  color: #fff;
+        }
+       ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #333333;
+}
+
+li {
+    float: left;
+}
+
+li a {
+    margin-right: 10vw;
+    text-align: center;
+    display: inline;
+    color: white;
+    text-align: center;
+    padding: 16px;
+    text-decoration: none;
+}
+
+.information{
+    font-size: 1.5em;
+}
+
+.inline{
+    display:inline;
+}
+
+.r-card{
+    max-width: 20vw; 
+    max-height: 35vh;
+     min-width: 15vw;
+      min-height: 35vh; 
+}
+
+
+    </style>
+</head>
+<body style="background-color: #f1f1f1">
+    <div class="text-center centered-vertical information"><h1><strong>Programa de Control de Roedores</strong></h1>
+    Elementos totales <p class="inline" id="cantidad"> </p>- supervisados <p class="inline" id="supervisados"></p><br>Fecha : <p class="inline" id="fecha"></p></div>
+<div class="row centered">
+<div class="col-4 card" style="transform: translate(-50%, 0%);">
+<canvas  id="grafico_avance" class="r-card" width="300" height="450" ></canvas>
+     </div>
+        <script type="text/javascript">
+            var cantidad = document.getElementById("cantidad");
+        	var supervisados = document.getElementById("supervisados");
+            var fecha = document.getElementById('fecha');
+            var dia = new Date();
+  function spanishDate(d){
+var weekday=["Domingo","Lunes","Martes","Miercoles","Jueves","Viernes","Sabado"];
+var monthname=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+return weekday[d.getDay()]+" "+d.getDate()+" de "+monthname[d.getMonth()]+" de "+d.getFullYear()
+}
+            fecha.innerHTML = spanishDate(dia);
+            var avance;
+        	
+        	$.ajax({
+                //"http://localhost/raton_app/api/web/avance_supervision.php"
+        		url:"http://13.59.31.193/raton_app/api/web/avance_supervision.php",
+        		dataType : "JSON"
+       	})
+        	.done(function(data){
+	console.log(data["avance"]);
+	var total = 1000;                
+cantidad.innerHTML = total;
+                supervisados.innerHTML = data["avance"];
+        		avance = (data["avance"] / total) * 100 ;
+                var pendiente = ((total - data["avance"]) / total ) * 100;
+                avance = +avance.toFixed(2);
+                pendiente = +pendiente.toFixed(2);
+            var gph_avance = document.getElementById("grafico_avance").getContext("2d");
+            var grafico = new Chart(gph_avance, {
+                type : 'pie',
+                data : {
+                    labels : ["Supervisado", "No supervisado"],
+                    datasets : [{
+                        data : [avance, pendiente],
+                        backgroundColor : [
+                            'rgba(47,181,243, 0.2)',
+                            'rgba(106,37,158, 0.2)'
+                        ],
+                        borderColor : [
+                        'rgba(47,181,243, 0.2)',
+                            'rgba(106,37,158, 0.2)'                    
+                        ],
+                        borderWidth : 1
+                    }]
+                },
+                options: {
+                plugins: {
+                    datalabels: {
+                        backgroundColor: function(context) {
+                            return context.dataset.backgroundColor;
+                        },
+                        borderColor: 'black',
+                        borderRadius: 25,
+                        borderWidth: 2,
+                        color: 'black',
+                        display: function(context) {
+                            var dataset = context.dataset;
+                            var count = dataset.data.length;
+                            var value = dataset.data[context.dataIndex];
+                            return value > count * 1.5;
+                        },
+                        font: {
+                            weight: 'bold'
+                        }
+                    }
+                },
+
+                    responsive : true,
+                    title: {
+                        display: true,
+                        position: "top",
+                        text: "Avance de supervisión (%)",
+                        fontSize: 22,
+                        fontColor: "#111"
+                     }
+                }
+            });
+        });
+        
+    </script>
+<div class="col-4 card"  >
+<canvas  id="grafico_captura" class="r-card" width="300" height="450"></canvas>
+     </div>
+        <script type="text/javascript">
+            var si;
+            var total;
+            $.ajax({
+                url:"../api/web/avance_captura.php",
+                dataType : "JSON"
+            })
+            .done(function(data){
+                total = data[2]["TOTAL"];
+                si = (data[0]["SI"] / total) * 100 ;
+                var no = (data[1]["NO"]/total)*100;
+                si = +si.toFixed(2);
+                no = +no.toFixed(2);
+                console.log("SI "+si);
+                console.log("NO "+no);
+            var gph_captura = document.getElementById("grafico_captura").getContext("2d");
+            var grafico = new Chart(gph_captura, {
+                type : 'pie',
+                data : {
+                    labels : ["Captura", "No captura"],
+                    datasets : [{
+                        data : [si, no],
+                        backgroundColor : [
+                            'rgba(47,181,243, 0.2)',
+                            'rgba(106,37,158, 0.2)'
+                        ],
+                        borderColor : [
+                        'rgba(47,181,243, 0.2)',
+                        'rgba(106,37,158, 0.2)'                  
+                        ],
+                        borderWidth : 1
+                    }]
+                },
+                options: {
+
+                    plugins: {
+                    datalabels: {
+                        backgroundColor: function(context) {
+                            return context.dataset.backgroundColor;
+                        },
+                        borderColor: 'black',
+                        borderRadius: 25,
+                        borderWidth: 2,
+                        color: 'black',
+                        display: function(context) {
+                            var dataset = context.dataset;
+                            var count = dataset.data.length;
+                            var value = dataset.data[context.dataIndex];
+                            return value > count * 1.5;
+                        },
+                        font: {
+                            weight: 'bold'
+                        }
+                    }
+                },
+                    responsive : true,
+                    title: {
+                        display: true,
+                        position: "top",
+                        text: "Capturas (%)",
+                        fontSize: 22,
+                        fontColor: "#111"
+                     }
+                }
+            });
+            
+        });
+        
+    </script>
+<div class="col-4 card"  style="transform: translate(50%, 0%);">
+<canvas  id="grafico_estado" class="r-card" width="300" height="450"></canvas>
+     </div>
+        <script type="text/javascript">
+            $.ajax({
+                url:"../api/web/avance_estado.php",
+                dataType : "JSON"
+            })
+            .done(function(data){
+                let sin_acceso = data["TOT_SIN_ACCESO"];
+                let retirado = data["TOT_RETIRADO_CLIENTE"];
+                let operativo = data["TOT_OPERATIVO"];
+                let perdido = data["TOT_PERDIDO"];
+                let danado = data["TOT_DANADO"];
+                let sustituido = data["TOT_SUSTITUIDO"];
+            var gph_estado = document.getElementById("grafico_estado").getContext("2d");
+            var grafico = new Chart(gph_estado, {
+                type : 'bar',
+                data : {
+                    labels : ["Operativo", "Retirado","Perdido","Dañado","Sustituido","Sin acceso"],
+                    datasets : [{
+                        data : [operativo, retirado, perdido, danado, sustituido, sin_acceso],  
+                        backgroundColor : [
+                            'rgba(77,238,234, 0.2)',
+                            'rgba(116,238,21, 0.2)',
+                            'rgba(255,231,0, 0.2)',
+                            'rgba(240,0,255, 0.2)',
+                            'rgba(0,30,255, 0.2)',
+                            'rgba(106,37,158, 0.2)'
+
+                        ],
+                        borderColor : [
+                            'rgba(77,238,234, 0.2)',
+                            'rgba(116,238,21, 0.2)',
+                            'rgba(255,231,0, 0.2)',
+                            'rgba(240,0,255, 0.2)',
+                            'rgba(0,30,255, 0.2)',
+                            'rgba(106,37,158, 0.2)'
+
+                        ],
+                        borderWidth : 1
+                    }]
+                },
+                options: {
+                    legend: {
+                        display: false
+                        },
+                    tooltips: {
+                        enabled: false
+                        },
+                    plugins: {
+                    datalabels: {
+                        color: 'black',
+                        display: function(context) {
+                            return context.dataset.data[context.dataIndex] > 15;
+                        },
+                        font: {
+                            weight: 'bold'
+                        },
+                        formatter: Math.round
+                    }
+                },
+                scales: {
+                    xAxes: [{
+                        ticks : {
+                            fontSize : 10
+                        },
+                        stacked: true
+                    }],
+                    yAxes: [{
+                        stacked: true
+                    }]
+                },
+                    responsive : true,
+                    title: {
+                        display: true,
+                        position: "top",
+                        text: "Estado de dispositivos",
+                        fontSize: 22,
+                        fontColor: "#111"
+                     }
+                }
+            });
+            
+        });
+        
+    </script>
+</div>
+<div class="down text-center">
+    <div style="margin-left: 20vw; margin-top: 1vh;">
+    <h5 style="margin-right: 20vw;"><strong>Desarrollado por Bruno León - Full Stack Android & Web Developer</strong></h3>
+       <div style="bottom: 0; position: fixed; right: :50;"><ul style="display: inline;">
+        <li><a target="_blank" href="https://stackoverflow.com/users/7847035/b-le%c3%b3n"><i class="fab fa-stack-overflow"></i> Stack Overflow</a></li>
+        <li><a target="_blank" href="https://www.linkedin.com/in/bruno-le%C3%B3n-925112141/"><i class="fab fa-linkedin-in"></i> Linkedin</a></li>
+        <li><a target="_blank" href="https://github.com/nosavvy33"><i class="fab fa-github"></i> GitHub</a></li>
+    </ul></div>
+    </div>
+</div>
+</body>
+</html>
